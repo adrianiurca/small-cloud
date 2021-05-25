@@ -107,3 +107,4 @@ dist
 package-lock.json
 
 # tools/run_test.ts
+tools/run_test.ts

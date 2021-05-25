@@ -1,0 +1,30 @@
+ENV["LC_ALL"] = "en_US.UTF-8"
+
+$install_puppet = <<-SCRIPT
+# yum update -y
+# yum install curl -y
+curl -o puppet.rpm http://yum.puppetlabs.com/puppet6/puppet6-release-el-7.noarch.rpm
+rpm -Uvh puppet.rpm --quiet
+yum install puppet-agent -y --quiet
+SCRIPT
+
+$config_user = <<-SCRIPT
+facter_ip=$(facter networking.interfaces.eth1.ip)
+echo $facter_ip
+echo "###FACTER ${facter_ip} FACTER###"
+sudo adduser <%= vm_user %>
+sudo echo -e "<%= vm_password %>\n<%= vm_password %>" | passwd <%= vm_user %>
+sudo usermod -aG wheel <%= vm_user %>
+sudo sed -i 's/PasswordAuthentication no/PasswordAuthentication yes/g' /etc/ssh/sshd_config
+sudo echo 'AllowUsers <%= vm_user %>' >> /etc/ssh/sshd_config
+sudo systemctl restart sshd
+SCRIPT
+
+Vagrant.configure("2") do |config|
+  config.vm.box = "<%= vm_box %>"
+  config.vm.hostname = "<%= vm_hostname %>"
+  config.vm.network "public_network", bridge: "en0: Wi-Fi (Wireless)"
+  config.vm.provision "shell", inline: $install_puppet
+  config.vm.provision "shell", inline: $config_user
+  config.ssh.insert_key = false
+end

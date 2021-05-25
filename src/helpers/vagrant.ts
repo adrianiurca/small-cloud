@@ -75,7 +75,7 @@ export const provision = (machine: VagrantDetails) => {
       } else {
         const vm_ip: string = stdout.match(/###FACTER\s(.*)\sFACTER###/)[1]
         shell.exec(
-          `puppet apply -e "host {'${vm_hostname}': ensure => present, name => '${vm_hostname}', ip => '${vm_ip}'}"`,
+          `/opt/puppetlabs/bin/puppet apply -e "host {'${vm_hostname}': ensure => present, name => '${vm_hostname}', ip => '${vm_ip}'}"`,
           { async: true, silent: true },
           (code, _stdout, stderr) => {
             if(code != 0) return reject({ status_code: code, error: new Error(stderr) })
@@ -102,7 +102,7 @@ export const teardown = (machine: VagrantMachine) => {
       if(code != 0) return reject({ status_code: code, error: new Error(stderr) })
       shell.rm('-rf', machine.vm_path)
       shell.exec(
-        `puppet apply -e "host {'${machine.vm_hostname}': ensure => absent, name => '${machine.vm_hostname}', ip => '${machine.vm_ip}'}"`,
+        `/opt/puppetlabs/bin/puppet apply -e "host {'${machine.vm_hostname}': ensure => absent, name => '${machine.vm_hostname}', ip => '${machine.vm_ip}'}"`,
         { async: true, silent: true },
         (code, _stdout, stderr) => {
           if(code != 0) return reject({ status_code: code, error: new Error(stderr) })

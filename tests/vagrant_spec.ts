@@ -7,7 +7,7 @@ describe('vagrant helper', () => {
     let machine: VagrantMachine = null
     it('creates the VM', async() => {
       const details = {
-        vm_box: 'generic/centos7',
+        vm_box: process.env.PLATFORM,
         vm_owner: 'user1'
       }
       machine = await provision(details)
@@ -19,7 +19,7 @@ describe('vagrant helper', () => {
       expect(machine).to.have.property('vm_hostname').and.to.be.a('string')
       expect(machine).to.have.property('vm_path').and.to.be.a('string')
       expect(machine).to.have.property('vm_owner').and.to.be.a('string')
-      expect(machine.vm_box).to.equals('generic/centos7')
+      expect(machine.vm_box).to.equals(process.env.PLATFORM)
       expect(machine.vm_owner).to.equals('user1')
     })
 

@@ -10,7 +10,6 @@ SCRIPT
 
 $config_user = <<-SCRIPT
 facter_ip=$(facter networking.interfaces.eth1.ip)
-echo $facter_ip
 echo "###FACTER ${facter_ip} FACTER###"
 sudo adduser <%= vm_user %>
 sudo echo -e "<%= vm_password %>\n<%= vm_password %>" | passwd <%= vm_user %>

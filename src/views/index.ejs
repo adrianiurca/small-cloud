@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>Guitar Inventory</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
+    <style>
+        .navbar {
+            margin: 2% 2% 2% 2%;
+        }
+    </style>
+</head>
+<body>
+    <nav>
+        <div class="nav-wrapper light-blue accent-3">
+          <a href="#" class="brand-logo" style="margin-left: 2%;"><i class="large material-icons">cloud</i></a>
+          <ul id="nav-mobile" class="right hide-on-med-and-down">
+            <li><a href="sass.html">Sass</a></li>
+            <li><a href="badges.html">Components</a></li>
+            <li><a href="collapsible.html">JavaScript</a></li>
+          </ul>
+        </div>
+    </nav>
+    <div class="container">
+        <h1 class="header">Small Cloud</h1>
+        <a class="btn light-blue accent-3" href="/signup"><i class="material-icons right light-blue accent-3">arrow_forward</i>Get started!</a><br />
+        <div class="divider"></div>
+        <div class="section">
+            <h5>our platform run docker and vagrant</h5>
+            <h5>Docker Version: <b><%= docker_version %></b></h5>
+            <h5>Vagrant Version: <b><%= vagrant_version %></b></h5>
+        </div>
+    </div>
+</body>
+</html>

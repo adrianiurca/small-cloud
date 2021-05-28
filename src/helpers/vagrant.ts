@@ -6,6 +6,7 @@ import { v4 as uuidv4 } from 'uuid'
 import randomWords = require('random-words')
 import { allVms } from './db_utils'
 import randomString = require('randomstring')
+import log from './log_utils'
 
 export interface VagrantMachine {
   vm_user: string
@@ -38,20 +39,20 @@ export const provision = (machine: VagrantDetails) => {
     const vagrantfileTemplate: string = ejs.fileLoader(vagrantfileTemplatePath).toString()
 
     // generate hostname
-    let vm_hostname: string = `${randomWords({ exactly: 2, join: '-' })}.vm`
-    while(allVms().map(vm => vm.vm_hostname).includes(vm_hostname)) {
-      vm_hostname = `${randomWords({ exactly: 2, join: '-' })}.vm`
+    let vmHostName: string = `${randomWords({ exactly: 2, join: '-' })}.vm`
+    while(allVms().map(vm => vm.vm_hostname).includes(vmHostName)) {
+      vmHostName = `${randomWords({ exactly: 2, join: '-' })}.vm`
     }
 
     machine.vm_user = (typeof(machine.vm_user) === 'undefined') ? randomString.generate() : machine.vm_user
     machine.vm_password = (typeof(machine.vm_password) === 'undefined') ? randomString.generate() : machine.vm_password
 
     // fill template with values
-    const vagrantfile: string = ejs.render(vagrantfileTemplate, { 
+    const vagrantfile: string = ejs.render(vagrantfileTemplate, {
       vm_user: machine.vm_user,
       vm_password: machine.vm_password,
       vm_box: machine.vm_box,
-      vm_hostname: vm_hostname
+      vm_hostname: vmHostName
     })
 
     // generate path for Vagrantfile(the VM's name)
@@ -69,25 +70,31 @@ export const provision = (machine: VagrantDetails) => {
     })
 
     // build VM
-    shell.exec(`cd ${machinePath} && vagrant up`, { async: true, silent: true }, (code, stdout, stderr) => {
-      if(code != 0) {
-        return reject({ status_code: code, error: new Error(stderr) })
+    shell.exec(`cd ${machinePath} && vagrant up`, { async: true, silent: true }, (vagrantUpCode, vagrantUpStdout, vagrantUpStderr) => {
+      if(vagrantUpCode !== 0) {
+        log(vagrantUpStdout)
+        return reject({ status_code: vagrantUpCode, error: new Error(vagrantUpStderr) })
       } else {
-        const vm_ip: string = stdout.match(/###FACTER\s(.*)\sFACTER###/)[1]
+        const vmIp: string = vagrantUpStdout.match(/###FACTER\s(.*)\sFACTER###/)[1]
+        log(`Machine IP: ${vmIp}`)
         shell.exec(
-          `/opt/puppetlabs/bin/puppet apply -e "host {'${vm_hostname}': ensure => present, name => '${vm_hostname}', ip => '${vm_ip}'}"`,
+          `/opt/puppetlabs/bin/puppet apply -e "host {'${vmHostName}': ensure => present, name => '${vmHostName}', ip => '${vmIp}'}"`,
           { async: true, silent: true },
-          (code, _stdout, stderr) => {
-            if(code != 0) return reject({ status_code: code, error: new Error(stderr) })
-            return resolve({
-              vm_user: machine.vm_user,
-              vm_password: machine.vm_password,
-              vm_ip: vm_ip,
-              vm_box: machine.vm_box,
-              vm_hostname: vm_hostname,
-              vm_path: machinePath,
-              vm_owner: machine.vm_owner
-            })
+          (puppetApplyCode, puppetApplyStdout, puppetApplyStderr) => {
+            if(puppetApplyCode !== 0) {
+              log(puppetApplyStdout)
+              return reject({ status_code: puppetApplyCode, error: new Error(puppetApplyStderr) })
+            } else {
+              return resolve({
+                vm_user: machine.vm_user,
+                vm_password: machine.vm_password,
+                vm_ip: vmIp,
+                vm_box: machine.vm_box,
+                vm_hostname: vmHostName,
+                vm_path: machinePath,
+                vm_owner: machine.vm_owner
+              })
+            }
           }
         )
       }
@@ -98,14 +105,14 @@ export const provision = (machine: VagrantDetails) => {
 export const teardown = (machine: VagrantMachine) => {
   return new Promise<string>((resolve: (value: string) => void, reject: (reason: VagrantError) => void) => {
     // run vagrant destroy
-    shell.exec(`cd ${machine.vm_path} && vagrant destroy -f`, { async: true, silent: true }, (code, _stdout, stderr) => {
-      if(code != 0) return reject({ status_code: code, error: new Error(stderr) })
+    shell.exec(`cd ${machine.vm_path} && vagrant destroy -f`, { async: true, silent: true }, (vagrantDestroyCode, _vagrantDestroyStdout, vagrantDestroyStderr) => {
+      if(vagrantDestroyCode !== 0) return reject({ status_code: vagrantDestroyCode, error: new Error(vagrantDestroyStderr) })
       shell.rm('-rf', machine.vm_path)
       shell.exec(
         `/opt/puppetlabs/bin/puppet apply -e "host {'${machine.vm_hostname}': ensure => absent, name => '${machine.vm_hostname}', ip => '${machine.vm_ip}'}"`,
         { async: true, silent: true },
-        (code, _stdout, stderr) => {
-          if(code != 0) return reject({ status_code: code, error: new Error(stderr) })
+        (puppetApplyCode, _puppetApplyStdout, puppetApplyStderr) => {
+          if(puppetApplyCode !== 0) return reject({ status_code: puppetApplyCode, error: new Error(puppetApplyStderr) })
           return resolve('removed!')
         }
       )

@@ -47,22 +47,29 @@ jobs:
           cd /Users/runner/work/small-cloud/small-cloud/tools && npm install
           isLocal=$(/Users/runner/work/small-cloud/small-cloud/tools/node_modules/.bin/ts-node check_local.ts ${{ matrix.platform }})
           if [[ "$isLocal" == "true" ]]; then
-            echo "is local"
+            echo "${{ matrix.platform }} already downloaded!"
           else
             if [[ "$isLocal" == "unsupported" ]]; then
-              echo "${platform} is not supported in this version"
+              echo "${{ matrix.platform }} is not supported in this version!"
               exit 1
             else
               vagrant box add --name ${{ matrix.platform }} $isLocal
             fi
           fi
 
+      - name: Cache Puppet
+        id: cache-puppet
+        uses: actions/cache@v2
+        with:
+          path: /opt/puppetlabs
+          key: ${{ runner.os }}-puppet
+
       - name: Install Puppet Agent
-        run: |
-          brew install cask puppetlabs/puppet/puppet-agent
-          sudo chmod 0666 /etc/hosts
+        if: steps.cache-puppet.outputs.cache-hit != 'true'
+        run: brew install cask puppetlabs/puppet/puppet-agent
       
       - name: Run test
         run: |
+          sudo chmod 0666 /etc/hosts
           npm install
           npm test

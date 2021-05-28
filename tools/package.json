@@ -1,0 +1,19 @@
+{
+  "name": "check_local",
+  "version": "1.0.0",
+  "description": "chack the platform version and decide if download needs to be done from vagrantcloud.com",
+  "main": "check_local.ts",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Adrian Iurca",
+  "license": "ISC",
+  "devDependencies": {
+    "@types/node": "^15.6.1",
+    "@types/shelljs": "^0.8.8",
+    "ts-node": "^10.0.0"
+  },
+  "dependencies": {
+    "shelljs": "^0.8.4"
+  }
+}

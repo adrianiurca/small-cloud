@@ -11,8 +11,8 @@ describe('fetchDockerVersion test', () => {
 
   it('fetch the correct version', () => {
     const version = fetchDockerVersion()
-    const systemVagrantVersion = shell.exec('docker --version', { silent: true }).stdout.trim()
+    const systemDockerVersion = shell.exec('docker --version', { silent: true }).stdout.trim()
 
-    expect(version).to.be.equal(systemVagrantVersion)
+    expect(version).to.be.equal(systemDockerVersion)
   })
 })

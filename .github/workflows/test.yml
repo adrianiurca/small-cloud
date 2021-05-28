@@ -1,0 +1,68 @@
+name: "Unit Testing"
+
+on: [pull_request]
+
+jobs:
+  Testing:
+    name: "Unit testing, Node Version ${{ matrix.node_version }} - Platform ${{ matrix.platform }}"
+    runs-on: macos-10.15
+    strategy:
+      fail-fast: false
+      matrix:
+        node_version:
+          - 15
+        platform:
+          - generic/centos7
+
+    env:
+      PLATFORM: ${{ matrix.platform }}
+    
+    steps:
+      - name: Checkout Source
+        uses: actions/checkout@v2
+
+      - name: Cache Node
+        uses: actions/cache@v2
+        with:
+          path: ~/.npm
+          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-
+
+      - name: Setup Node.js environment
+        uses: actions/setup-node@v2.1.5
+        with:
+          node-version: ${{ matrix.node_version }}
+
+      - name: Cache Vagrant boxes
+        uses: actions/cache@v2
+        with:
+          path: ~/.vagrant.d/boxes
+          key: ${{ runner.os }}-vagrant-${{ hashFiles('Vagrantfile') }}
+          restore-keys: |
+            ${{ runner.os }}-vagrant-
+
+      - name: Download Vagrant box
+        run: |
+          cd /Users/runner/work/small-cloud/small-cloud/tools && npm install
+          isLocal=$(/Users/runner/work/small-cloud/small-cloud/tools/node_modules/.bin/ts-node check_local.ts ${{ matrix.platform }})
+          if [[ "$isLocal" == "true" ]]; then
+            echo "is local"
+          else
+            if [[ "$isLocal" == "unsupported" ]]; then
+              echo "${platform} is not supported in this version"
+              exit 1
+            else
+              vagrant box add --name ${{ matrix.platform }} $isLocal
+            fi
+          fi
+
+      - name: Install Puppet Agent
+        run: |
+          brew install cask puppetlabs/puppet/puppet-agent
+          sudo chmod 0666 /etc/hosts
+      
+      - name: Run test
+        run: |
+          npm install
+          npm test

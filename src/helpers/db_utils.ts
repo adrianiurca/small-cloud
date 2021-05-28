@@ -58,4 +58,3 @@ export const getVmByHostname = (hostname: string):VagrantMachine => {
     throw err
   }
 }
-  

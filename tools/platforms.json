@@ -1,0 +1,16 @@
+{
+    "platforms": [
+        {
+            "name": "generic/centos7",
+            "url": "https://app.vagrantup.com/generic/boxes/centos7/versions/3.2.20/providers/virtualbox.box"
+        },
+        {
+            "name": "generic/centos8",
+            "url": "https://app.vagrantup.com/generic/boxes/centos8/versions/3.2.20/providers/virtualbox.box"
+        },
+        {
+            "name": "generic/rhel7",
+            "url": "https://app.vagrantup.com/generic/boxes/rhel7/versions/3.2.20/providers/virtualbox.box"
+        }
+    ]
+}

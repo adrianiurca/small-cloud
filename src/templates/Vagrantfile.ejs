@@ -11,6 +11,50 @@ SCRIPT
 $config_user = <<-SCRIPT
 facter_ip=$(facter networking.interfaces.eth1.ip)
 echo "###FACTER ${facter_ip} FACTER###"
+os_architecture=$(facter os.architecture)
+echo "###facter_os_architecture ${os_architecture} facter_os_architecture###"
+os_family=$(facter os.family)
+echo "###facter_os_family ${os_family} facter_os_family###"
+os_hardware=$(facter os.hardware)
+echo "###facter_os_hardware ${os_hardware} facter_os_hardware###"
+os_name=$(facter os.name)
+echo "###facter_os_name ${os_name} facter_os_name###"
+os_release=$(facter os.release.full)
+echo "###facter_os_release ${os_release} facter_os_release###"
+memory_swap=$(facter memory.swap.total)
+echo "###facter_memory_swap ${memory_swap} facter_memory_swap###"
+memory_system=$(facter memory.system.total)
+echo "###facter_memory_system ${memory_system} facter_memory_system###"
+kernel=$(facter kernel)
+echo "###facter_kernel ${kernel} facter_kernel###"
+kernelrelease=$(facter kernelrelease)
+echo "###facter_kernelrelease ${kernelrelease} facter_kernelrelease###"
+timezone=$(facter timezone)
+echo "###facter_timezone ${timezone} facter_timezone###"
+virtual=$(facter virtual)
+echo "###facter_virtual ${virtual} facter_virtual###"
+is_virtual=$(facter is_virtual)
+echo "###facter_is_virtual ${is_virtual} facter_is_virtual###"
+disks_model=$(facter disks.sda.model)
+echo "###facter_disks_sda_model ${disks_model} facter_disks_sda_model###"
+disks_size=$(facter disks.sda.size)
+echo "###facter_disks_sda_size ${disks_size} facter_disks_sda_size###"
+filesystems=$(facter filesystems)
+echo "###facter_filesystems ${filesystems} facter_filesystems###"
+processors_count=$(facter processors.count)
+echo "###facter_processors_count ${processors_count} facter_processors_count###"
+processors_count=$(expr "$processors_count * 1")
+iterator=0
+while [[ "$iterator" -ne "$processors_count" ]]
+do
+  model=$(facter processors.models.$iterator)
+  echo "###facter_processors_models_${iterator}#${model}#facter_processors_models_${iterator}###"
+  iterator=$((iterator + 1))
+done
+processors_isa=$(facter processors.isa)
+echo "###facter_processors_isa ${processors_isa} facter_processors_isa###"
+processors_physicalcount=$(facter processors.physicalcount)
+echo "###facter_processors_physicalcount ${processors_physicalcount} facter_processors_physicalcount###"
 sudo adduser <%= vm_user %>
 sudo echo -e "<%= vm_password %>\n<%= vm_password %>" | passwd <%= vm_user %>
 sudo usermod -aG wheel <%= vm_user %>

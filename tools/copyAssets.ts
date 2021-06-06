@@ -11,3 +11,6 @@ shell.cp('-R', 'src/templates', 'dist/')
 
 // copy db.json
 shell.cp('-R', 'src/db', 'dist/')
+
+// copy public assets
+shell.cp('-R', 'src/public', 'dist/')

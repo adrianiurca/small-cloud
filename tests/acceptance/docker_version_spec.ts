@@ -1,4 +1,4 @@
-import { fetchDockerVersion } from '../src/helpers/docker_version'
+import { fetchDockerVersion } from '../../src/helpers/docker_version'
 import { expect } from 'chai'
 import * as shell from 'shelljs'
 

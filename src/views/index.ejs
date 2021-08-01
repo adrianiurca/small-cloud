@@ -7,16 +7,21 @@
     <%- include('_javascript.ejs') %>
 </head>
 <body>
-    <%- include('_menu.ejs') %>
-    <div class="container">
-        <h1 class="header">Small Cloud</h1>
-        <a class="btn light-blue accent-3" href="/signup"><i class="material-icons right light-blue accent-3">arrow_forward</i>Get started!</a><br />
-        <div class="divider"></div>
-        <div class="section">
-            <h5>our platform run docker and vagrant</h5>
-            <h5>Docker Version: <b><%= docker_version %></b></h5>
-            <h5>Vagrant Version: <b><%= vagrant_version %></b></h5>
+    <header>
+        <%- include('_menu.ejs') %>
+    </header>
+    <main>
+        <div class="container">
+            <h1 class="header">Small Cloud</h1>
+            <a class="btn light-blue accent-3" href="/signup"><i class="material-icons right light-blue accent-3">arrow_forward</i>Get started!</a><br />
+            <div class="divider"></div>
+            <div class="section">
+                <h5>our platform run docker and vagrant</h5>
+                <h5>Docker Version: <b><%= docker_version %></b></h5>
+                <h5>Vagrant Version: <b><%= vagrant_version %></b></h5>
+            </div>
         </div>
-    </div>
+    </main>
+    <%- include('_footer.ejs') %>
 </body>
 </html>

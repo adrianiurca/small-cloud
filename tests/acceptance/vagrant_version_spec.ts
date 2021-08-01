@@ -1,4 +1,4 @@
-import { fetchVagrantVersion } from '../src/helpers/vagrant_version'
+import { fetchVagrantVersion } from '../../src/helpers/vagrant_version'
 import { expect } from 'chai'
 import * as shell from 'shelljs'
 

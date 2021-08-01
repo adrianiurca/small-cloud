@@ -1,16 +1,41 @@
 ENV["LC_ALL"] = "en_US.UTF-8"
 
 $install_puppet = <<-SCRIPT
-# yum update -y
-# yum install curl -y
-curl -o puppet.rpm http://yum.puppetlabs.com/puppet6/puppet6-release-el-7.noarch.rpm
-rpm -Uvh puppet.rpm --quiet
-yum install puppet-agent -y --quiet
+<% vm_puppet_install_script.forEach(command => { %>
+  <%= command %>
+<% }) %>
+echo <%= typeof(vm_osfamily) %>
+echo <%= vm_osfamily %>
+<% if(vm_osfamily === 'debian') { %>
+  sudo sed -i 's/# auth required pam_wheel.so/auth required pam_wheel.so/g' /etc/pam.d/su
+<% } %>
 SCRIPT
 
-$config_user = <<-SCRIPT
-facter_ip=$(facter networking.interfaces.eth1.ip)
-echo "###FACTER ${facter_ip} FACTER###"
+$install_jq = <<-SCRIPT
+<% if(vm_osfamily === 'redhat') { %>
+  puppet module install puppet-epel
+  puppet apply -e 'include epel'
+  sudo yum install jq -y
+<% } else if(vm_osfamily === 'debian') { %>
+  sudo apt-get install jq -y
+<% } else { %>
+  echo 'Unsupported platform'
+  exit 1
+<% } %>
+SCRIPT
+
+$fetch_facts = <<-SCRIPT
+network_interfaces_ipv4_length=$(facter networking.interfaces --json | jq '[[."networking.interfaces"[]] | map(select(has("ip")))[] | .ip ] | length' -r)
+echo "###facter_ip_count ${network_interfaces_ipv4_length} facter_ip_count###"
+network_interfaces_ipv4_length=$(expr "$network_interfaces_ipv4_length * 1")
+ip_array=$(facter networking.interfaces --json | jq '[[."networking.interfaces"[]] | map(select(has("ip")))[] | .ip ]')
+iterator=0
+while [[ "$iterator" -ne "$network_interfaces_ipv4_length" ]]
+do
+  facter_ip=$(echo $ip_array | jq '.[$a | tonumber]' -r --arg a $iterator)
+  echo "###facter_ip_${iterator}#${facter_ip}#facter_ip_${iterator}###"
+  iterator=$((iterator + 1))
+done
 os_architecture=$(facter os.architecture)
 echo "###facter_os_architecture ${os_architecture} facter_os_architecture###"
 os_family=$(facter os.family)
@@ -55,7 +80,10 @@ processors_isa=$(facter processors.isa)
 echo "###facter_processors_isa ${processors_isa} facter_processors_isa###"
 processors_physicalcount=$(facter processors.physicalcount)
 echo "###facter_processors_physicalcount ${processors_physicalcount} facter_processors_physicalcount###"
-sudo adduser <%= vm_user %>
+SCRIPT
+
+$config_user = <<-SCRIPT
+sudo adduser <%= vm_user %> <% if(vm_osfamily === 'debian') { %><%= '--force-badname' %><% } %>
 sudo echo -e "<%= vm_password %>\n<%= vm_password %>" | passwd <%= vm_user %>
 sudo usermod -aG wheel <%= vm_user %>
 sudo sed -i 's/PasswordAuthentication no/PasswordAuthentication yes/g' /etc/ssh/sshd_config
@@ -68,6 +96,8 @@ Vagrant.configure("2") do |config|
   config.vm.hostname = "<%= vm_hostname %>"
   config.vm.network "public_network", bridge: "en0: Wi-Fi (Wireless)"
   config.vm.provision "shell", inline: $install_puppet
+  config.vm.provision "shell", inline: $install_jq
+  config.vm.provision "shell", inline: $fetch_facts
   config.vm.provision "shell", inline: $config_user
   config.ssh.insert_key = false
 end

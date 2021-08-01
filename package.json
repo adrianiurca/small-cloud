@@ -12,7 +12,8 @@
     "dev:start": "npm-run-all build start",
     "dev": "nodemon --watch src -e ts,ejs --exec npm run dev:start",
     "start": "node .",
-    "test": "env TS_NODE_COMPILER_OPTIONS='{\"module\": \"commonjs\" }' mocha --timeout 200000 -r ts-node/register 'tests/**/*.ts'"
+    "test:unit": "echo \"Error: no test specified\" && exit 1",
+    "test:acceptance": "env TS_NODE_COMPILER_OPTIONS='{\"module\": \"commonjs\" }' mocha --timeout 300000 -r ts-node/register 'tests/acceptance/**/*.ts'"
   },
   "repository": {
     "type": "git",

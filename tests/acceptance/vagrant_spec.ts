@@ -1,4 +1,4 @@
-import { provision, teardown, VagrantMachine } from '../src/helpers/vagrant'
+import { provision, teardown, VagrantMachine } from '../../src/helpers/vagrant'
 import { expect } from 'chai'
 import { NodeSSH } from 'node-ssh'
 

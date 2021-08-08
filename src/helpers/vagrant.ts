@@ -6,6 +6,8 @@ import { v4 as uuidv4 } from 'uuid'
 import randomWords = require('random-words')
 import { allVms, lastIndex } from './db_utils'
 import randomString = require('randomstring')
+import { generatePuppetInstallScript, fetchOSFamily, parsePlatform } from './puppet_install'
+import { fetchIPV4 } from './fetch_ipv4'
 import log from './log_utils'
 
 export interface VagrantMachine {
@@ -152,7 +154,9 @@ export const provision = (machine: VagrantDetails) => {
       vm_user: machine.vm_user,
       vm_password: machine.vm_password,
       vm_box: machine.vm_box,
-      vm_hostname: vmHostName
+      vm_hostname: vmHostName,
+      vm_puppet_install_script: generatePuppetInstallScript(machine.vm_box, 'puppet6'),
+      vm_osfamily: fetchOSFamily(parsePlatform(machine.vm_box, 'osname'))
     })
 
     // generate path for Vagrantfile(the VM's name)
@@ -171,12 +175,23 @@ export const provision = (machine: VagrantDetails) => {
 
     // build VM
     shell.exec(`cd ${machinePath} && vagrant up`, { async: true, silent: true }, (vagrantUpCode, vagrantUpStdout, vagrantUpStderr) => {
+      log(`VAGRANTFILE: ${vagrantfile}`)
+      log(`STDOUT: ${vagrantUpStdout}`)
       if(vagrantUpCode !== 0) {
         log(vagrantUpStdout)
         return reject({ status_code: vagrantUpCode, error: new Error(vagrantUpStderr) })
       } else {
-        const vmIp: string = vagrantUpStdout.match(/###FACTER\s(.*)\sFACTER###/)[1]
-        log(`STDOUT: ${vagrantUpStdout}`)
+        const vmIPs: string[] = []
+        const vmIPsLength: number = parseInt(vagrantUpStdout.match(/###facter_ip_count\s(.*)\sfacter_ip_count###/)[1], 10)
+        for(let index = 0; index < vmIPsLength; index++) {
+          const regex: RegExp = new RegExp(`###facter_ip_${index}#(.*)#facter_ip_${index}###`)
+          vmIPs.push(vagrantUpStdout.match(regex)[1])
+        }
+        const hostIPs: string[] = fetchIPV4()
+        const vmIp: string = vmIPs.filter(vmIP => hostIPs.map(ip => `${ip.split('.')[0]}.${ip.split('.')[1]}`).filter(ip => vmIP.startsWith(ip)).length > 0).filter(ip => ip.split('.')[0] !== '127')[0]
+        log(`HOSTIPS: ${hostIPs}`)
+        log(`VMIPS: ${vmIPs}`)
+        log(`VM_IP: ${vmIp}`)
         const vmDetails: VagrantFacts = fetchVmFacts(vagrantUpStdout)
         shell.exec(
           `/opt/puppetlabs/bin/puppet apply -e "host {'${vmHostName}': ensure => present, name => '${vmHostName}', ip => '${vmIp}'}"`,

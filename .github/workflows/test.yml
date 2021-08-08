@@ -1,10 +1,10 @@
-name: "Unit Testing"
+name: "Acceptance Testing"
 
 on: [pull_request]
 
 jobs:
   Testing:
-    name: "Unit testing, Node Version ${{ matrix.node_version }} - Platform ${{ matrix.platform }}"
+    name: "Node ${{ matrix.node_version }} - ${{ matrix.platform }}"
     runs-on: macos-10.15
     strategy:
       fail-fast: false
@@ -13,6 +13,7 @@ jobs:
           - 15
         platform:
           - generic/centos7
+          - generic/debian9
 
     env:
       PLATFORM: ${{ matrix.platform }}
@@ -61,15 +62,15 @@ jobs:
         id: cache-puppet
         uses: actions/cache@v2
         with:
-          path: /opt/puppetlabs
-          key: ${{ runner.os }}-puppet
+          path: ~/.puppetlabs/opt/puppet/cache
+          key: ${{ runner.os }}-puppetlabs-
 
       - name: Install Puppet Agent
-        if: steps.cache-puppet.outputs.cache-hit != 'true'
+        # if: steps.cache-puppet.outputs.cache-hit != 'true'
         run: brew install cask puppetlabs/puppet/puppet-agent
       
       - name: Run test
         run: |
           sudo chmod 0666 /etc/hosts
           npm install
-          npm test
+          npm run test:acceptance

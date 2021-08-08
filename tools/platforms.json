@@ -11,6 +11,10 @@
         {
             "name": "generic/rhel7",
             "url": "https://app.vagrantup.com/generic/boxes/rhel7/versions/3.2.20/providers/virtualbox.box"
+        },
+        {
+            "name": "generic/debian9",
+            "url": "https://app.vagrantup.com/generic/boxes/debian9/versions/3.3.2/providers/virtualbox.box"
         }
     ]
 }

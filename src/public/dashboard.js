@@ -58,7 +58,7 @@ const dashboardApp = async() => {
 
       const tdOptions = document.createElement('td')
       tdOptions.innerHTML = `
-        <a class="btn-floating btn-small waves-effect waves-light yellow" href="vm/details/${vm.vm_id}"><i class="material-icons">details</i></a>
+        <a class="btn-floating btn-small waves-effect waves-light yellow" href="vm/details/?vm_id=${vm.vm_id}"><i class="material-icons">details</i></a>
         <a class="btn-floating btn-small waves-effect waves-light blue" href="vm/edit/${vm.vm_id}"><i class="material-icons">edit</i></a>
         <a class="btn-floating btn-small waves-effect waves-light red" id="delete-${vm.vm_id}"><i class="material-icons">delete</i></a>
       `
@@ -88,32 +88,32 @@ const dashboardApp = async() => {
     listAllVms.appendChild(h5)
   }
 
-    for(let listener of listeners) {
-      const elem = document.getElementById(listener)
-      elem.addEventListener('click', async() => {
-        if(listener === 'createNewVmBtn') {
-          loading('big')
-          await http({
-            baseURL: 'http://localhost:8080/',
-            url: '/vm/new',
-            method: Method.POST,
-            data: {
-              vm_box: 'generic/centos7',
-              vm_owner: 'user1'
-            }
-          })
-          dashboardApp()
-        } else {
-          loading('big')
-          await http({
-            baseURL: 'http://localhost:8080/',
-            url: `/vm/${listener.split('-')[1]}`,
-            method: Method.DELETE,
-          })
-          dashboardApp()
-        }
-      })
-    }
+  for(let listener of listeners) {
+    const elem = document.getElementById(listener)
+    elem.addEventListener('click', async() => {
+      if(listener === 'createNewVmBtn') {
+        loading('big')
+        await http({
+          baseURL: 'http://localhost:8080/',
+          url: '/vm/new',
+          method: Method.POST,
+          data: {
+            vm_box: 'generic/centos7',
+            vm_owner: 'user1'
+          }
+        })
+        dashboardApp()
+      } else {
+        loading('big')
+        await http({
+          baseURL: 'http://localhost:8080/',
+          url: `/vm/${listener.split('-')[1]}`,
+          method: Method.DELETE,
+        })
+        dashboardApp()
+      }
+    })
+  }
 }
 
 window.onload = async() => {

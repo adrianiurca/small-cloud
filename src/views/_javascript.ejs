@@ -1,3 +1,5 @@
 <script nomodule src="https://unpkg.com/browser-es-module-loader/dist/babel-browser-build.js"></script>
 <script nomodule src="https://unpkg.com/browser-es-module-loader"></script>
-<script type="module" src="./static/app.js"></script>
+<% if(typeof(script) === 'string') { %>
+  <script type="module" src="/static/<%= script %>.js"></script>
+<% } %>

@@ -31,6 +31,10 @@ vmRouter.get('/details/:id', (req, res) => {
   }
 })
 
+vmRouter.get('/details', (_req, res) => {
+  res.render('details')
+})
+
 vmRouter.delete('/:id', (req, res) => {
   const id: number = parseInt(req.params.id, 10)
   if(id > lastIndex()) {

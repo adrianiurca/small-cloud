@@ -3,7 +3,7 @@ import { expect } from 'chai'
 import * as shell from 'shelljs'
 
 describe('fetchIPV4 test', () => {
-  it('result is a String', () => {
+  it('result is an Array', () => {
     const result = fetchIPV4()
 
     expect(result).to.be.an.instanceOf(Array)

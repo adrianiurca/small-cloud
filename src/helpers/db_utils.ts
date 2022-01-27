@@ -39,7 +39,7 @@ export const removeVM = (vmData: VagrantMachine) => {
   }
 }
 
-export const allVms = ():VagrantMachine[] => {
+export const allVms = (): VagrantMachine[] => {
   const dbPath: string = path.join(__dirname, '/../db', 'db.json')
   try {
     const db: DataBase = JSON.parse(fs.readFileSync(dbPath, { encoding: 'utf8' }).toString())
@@ -49,7 +49,7 @@ export const allVms = ():VagrantMachine[] => {
   }
 }
 
-export const getVmById = (id: number):VagrantMachine => {
+export const getVmById = (id: number): VagrantMachine => {
   const dbPath: string = path.join(__dirname, '/../db', 'db.json')
   try {
     const db: DataBase = JSON.parse(fs.readFileSync(dbPath, { encoding: 'utf8' }).toString())
@@ -66,5 +66,28 @@ export const lastIndex = (): number => {
     return arr[arr.length - 1]
   } else {
     return 0
+  }
+}
+
+export const extendLifetime = (id: number, value: string): void => {
+  const dbPath = path.join(__dirname, '/../db', 'db.json')
+  try {
+    const db = JSON.parse(fs.readFileSync(dbPath, { encoding: 'utf8' }).toString())
+    const updatedDb = db.vms.map((machine: VagrantMachine) => {
+      if(machine.vm_id === id) {
+        return {
+          ...machine,
+          vm_lifetime: value
+        }
+      }
+    })
+    db.vms = updatedDb
+    try {
+      fs.writeFileSync(dbPath, JSON.stringify(db))
+    } catch(err) {
+      throw err
+    }
+  } catch(err) {
+    throw err
   }
 }

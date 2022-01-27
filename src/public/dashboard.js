@@ -17,6 +17,78 @@ const loading = (size) => {
   `
 }
 
+const extendLifetimeValidator = (id, lifetime) => {
+  const val = document.getElementById(id).value
+  if(!val || !val.length) return;
+  const intValue = parseInt(val, 10)
+  if(intValue <= lifetime) {
+    document.getElementById(id).classList.remove('valid')
+    document.getElementById(id).classList.add('invalid')
+  } else {
+    document.getElementById(id).classList.remove('invalid')
+    document.getElementById(id).classList.add('valid')
+  }
+}
+
+const editModalTemplate = params => {
+  const lifetime = parseInt(params.lifetime, 10)
+  return `
+    <div id="${params.id_modal}" class="modal">
+      <form id="${params.id_modal}-form" class="col s12">
+        <div class="modal-content">
+          <h4>Extend lifetime</h4>
+          <div class="row">
+            <div class="row modal-form-row">
+              <div class="input-field col s12">
+                <input 
+                  value="${lifetime}" 
+                  id="extend-lifetime-${params.id_modal}" 
+                  type="text" 
+                  class="validate"
+                >
+                <label for="extend-lifetime-${params.id_modal}">Lifetime(in hours)</label>
+                <span id="${params.id_modal}-span" class="helper-text" data-error="wrong" data-success="right">
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="submit" class="waves-effect waves-green btn-flat">Save</button>
+        </div>
+      </form>
+    </div>
+  `
+}
+
+const newVmModalTemplate = params => {
+  return `
+  <div id="${params.id_modal}" class="modal">
+  <form id="${params.id_modal}-form" class="col s12">
+    <div class="modal-content">
+      <h4>Extend lifetime</h4>
+      <div class="row">
+        <div class="row modal-form-row">
+          <div class="input-field col s12">
+            <input 
+              value="${lifetime}" 
+              id="extend-lifetime-${params.id_modal}" 
+              type="text" 
+              class="validate"
+            >
+            <label for="extend-lifetime-${params.id_modal}">Lifetime(in hours)</label>
+            <span id="${params.id_modal}-span" class="helper-text" data-error="wrong" data-success="right">
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button type="submit" class="waves-effect waves-green btn-flat">Save</button>
+    </div>
+  </form>
+</div>
+  `
+}
+
 const dashboardApp = async() => {
   const response = await http({
     baseURL: 'http://localhost:8080/',
@@ -24,6 +96,7 @@ const dashboardApp = async() => {
   })
 
   let listeners = []
+  let modals = []
   const listAllVms = document.getElementsByClassName('section')[0]
   listAllVms.innerHTML = ''
 
@@ -59,12 +132,15 @@ const dashboardApp = async() => {
       const tdOptions = document.createElement('td')
       tdOptions.innerHTML = `
         <a class="btn-floating btn-small waves-effect waves-light yellow" href="vm/details/?vm_id=${vm.vm_id}"><i class="material-icons">details</i></a>
-        <a class="btn-floating btn-small waves-effect waves-light blue" href="vm/edit/${vm.vm_id}"><i class="material-icons">edit</i></a>
+        <a class="btn-floating btn-small waves-effect waves-light blue" id="edit-${vm.vm_id}-${vm.vm_lifetime}"><i class="material-icons">edit</i></a>
         <a class="btn-floating btn-small waves-effect waves-light red" id="delete-${vm.vm_id}"><i class="material-icons">delete</i></a>
+        ${editModalTemplate({ vm_id: vm.vm_id, lifetime: vm.vm_lifetime, id_modal: `modal-${vm.vm_id}-${vm.vm_lifetime}` })}
       `
       tr.appendChild(tdOptions)
       tbody.appendChild(tr)
       listeners.push(`delete-${vm.vm_id}`)
+      listeners.push(`edit-${vm.vm_id}-${vm.vm_lifetime}`)
+      modals.push(`modal-${vm.vm_id}-${vm.vm_lifetime}`)
     }
 
     const tr = document.createElement('tr')
@@ -88,6 +164,41 @@ const dashboardApp = async() => {
     listAllVms.appendChild(h5)
   }
 
+  modals.forEach(modal => {
+    const domModal = document.getElementById(modal)
+    M.Modal.init(domModal)
+    const domInput = document.getElementById(`extend-lifetime-${modal}`)
+    const lifetime = parseInt(modal.split('-')[2], 10)
+    const vmId = modal.split('-')[1]
+    domInput.addEventListener('keyup', () => extendLifetimeValidator(`extend-lifetime-${modal}`, lifetime))
+    const domForm = document.getElementById(`${modal}-form`)
+    domForm.addEventListener('submit', async(submitEvent) => {
+      submitEvent.preventDefault()
+      const extendedLifetime = domInput.value
+      await http({
+        baseURL: 'http://localhost:8080/',
+        url: `/vm/edit/${vmId}`,
+        method: Method.PUT,
+        data: {
+          lifetime: extendedLifetime
+        },
+        afterResponse(resolve, reject, response) {
+          const { data, status } = response
+          if(status === 200) {
+            return resolve(data)
+          }
+          return reject(response)
+        }
+      }).then(() => {
+        const instance = M.Modal.getInstance(domModal)
+        instance.close()
+      }).catch(error => {
+        M.toast({ html: error.response.data.status })
+      })
+    })
+    M.updateTextFields()
+  })
+
   for(let listener of listeners) {
     const elem = document.getElementById(listener)
     elem.addEventListener('click', async() => {
@@ -104,13 +215,26 @@ const dashboardApp = async() => {
         })
         dashboardApp()
       } else {
-        loading('big')
-        await http({
-          baseURL: 'http://localhost:8080/',
-          url: `/vm/${listener.split('-')[1]}`,
-          method: Method.DELETE,
-        })
-        dashboardApp()
+        const vmAction = listener.split('-')[0]
+        switch(vmAction) {
+          case 'edit':
+            const modal = document.getElementById(`modal-${listener.split('-')[1]}-${listener.split('-')[2]}`)
+            const instance = M.Modal.getInstance(modal)
+            instance.open()
+            M.updateTextFields()
+            break
+          case 'delete':
+            loading('big')
+            await http({
+              baseURL: 'http://localhost:8080/',
+              url: `/vm/${listener.split('-')[1]}`,
+              method: Method.DELETE,
+            })
+            dashboardApp()
+            break
+          default:
+            console.log('wrong operation!')
+        }
       }
     })
   }

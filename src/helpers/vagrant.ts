@@ -21,6 +21,7 @@ export interface VagrantMachine {
   vm_details: VagrantFacts
   vm_lifetime: string
   vm_owner: string
+  vm_created_at: number
 }
 
 export interface VagrantDetails {
@@ -211,7 +212,8 @@ export const provision = (machine: VagrantDetails) => {
                 vm_path: machinePath,
                 vm_details: vmDetails,
                 vm_lifetime: machine.vm_lifetime,
-                vm_owner: machine.vm_owner
+                vm_owner: machine.vm_owner,
+                vm_created_at: Date.now()
               })
             }
           }

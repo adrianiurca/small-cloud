@@ -1,5 +1,39 @@
 <script nomodule src="https://unpkg.com/browser-es-module-loader/dist/babel-browser-build.js"></script>
 <script nomodule src="https://unpkg.com/browser-es-module-loader"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
 <% if(typeof(script) === 'string') { %>
   <script type="module" src="/static/<%= script %>.js"></script>
 <% } %>
+<script type="module">
+  import http from 'https://cdn.skypack.dev/@easytool/http'
+
+  window.addEventListener('load', async() => {
+    const ulDom = document.getElementById('nav-mobile')
+    const token = localStorage.getItem('token')
+    try {
+      http.defaults({
+        requestInterceptor(config) {
+          config.headers.Authorization = `JWT ${token}`
+          console.log(config.headers.Authorization)
+          return config
+        }
+      })
+      const menu = await http({
+        baseURL: 'http://localhost:8080',
+        url: '/menu',
+      })
+      const menuString = menu.data.menu.map(page => `<li><a href="${page.href}">${page.label}</a></li>`).join('\n')
+      ulDom.innerHTML = menuString
+      if(menu.data.auth) {
+        ulDom.innerHTML += '<li><a href="javascript:void(0)" id="logout">Logout</a></li>'
+        const logoutDom = document.getElementById('logout')
+        logoutDom.addEventListener('click', () => {
+          localStorage.clear()
+          window.location.replace('/')
+        })
+      }
+    } catch (error) {
+      M.toast({ html: error.response.data.status })
+    }
+  })
+</script>

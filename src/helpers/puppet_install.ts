@@ -1,28 +1,8 @@
-export const parsePlatform = (platform: string, target: string) => {
-  const data: string[] = platform.match(/^generic\/([a-zA-Z]+)(\d+)/i)
+import { Platform } from '../config/platforms'
 
-  if(target === 'osname') {
-    return data[1]
-  } else if(target === 'majorversion') {
-    return data[2]
-  } else {
-    throw new Error((`Could not fetch the ${target}`))
-  }
-}
-
-export const fetchOSFamily = (osname: string) => {
-  if(['debian', 'ubuntu'].includes(osname)) {
-    return 'debian'
-  } else if(['redhat', 'rhel', 'centos', 'scientific', 'oraclelinux'].includes(osname)) {
-    return 'redhat'
-  } else {
-    return 'unsupported'
-  }
-}
-
-const fetchCodename = (collection: string, majorVersion: string) => {
+const fetchCodename = (platform: Platform, collection: string) => {
   let codename = 'unsupported'
-  switch(majorVersion) {
+  switch(platform.majorversion) {
     case '8':
       if(collection === 'puppet6') {
         codename = 'jessie'
@@ -58,20 +38,13 @@ const fetchCodename = (collection: string, majorVersion: string) => {
   return codename
 }
 
-export const generatePuppetInstallScript = (platform: string, puppetCollection: string): string[] => {
-  const osname = parsePlatform(platform, 'osname')
-  const majorVersion = parsePlatform(platform, 'majorversion')
-  const osfamily = fetchOSFamily(osname)
+export const generatePuppetInstallScript = (platform: Platform, puppetCollection: string): string[] => {
   const collection = puppetCollection
 
-  if(osfamily === 'unsupported') {
-    throw new Error((`No builds for ${platform}`))
-  }
-
-  if(osfamily === 'debian') {
-    const codename = fetchCodename(collection, majorVersion)
+  if(platform.family === 'debian') {
+    const codename = fetchCodename(platform, collection)
     if(codename === 'unsupported') {
-      throw new Error((`No builds for ${platform}`))
+      throw new Error((`No builds for ${platform.label}`))
     } else {
       return [
         `curl -o puppet.deb http://apt.puppetlabs.com/${collection}-release-${codename}.deb`,
@@ -82,9 +55,9 @@ export const generatePuppetInstallScript = (platform: string, puppetCollection: 
     }
   }
 
-  if(osfamily === 'redhat') {
+  if(platform.family === 'redhat') {
     return [
-      `curl -o puppet.rpm http://yum.puppetlabs.com/${collection}/${collection}-release-el-${majorVersion}.noarch.rpm`,
+      `curl -o puppet.rpm http://yum.puppetlabs.com/${collection}/${collection}-release-el-${platform.majorversion}.noarch.rpm`,
       'rpm -Uvh puppet.rpm --quiet',
       'yum install puppetserver -y --quiet'
     ]

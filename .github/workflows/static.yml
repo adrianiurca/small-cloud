@@ -1,4 +1,4 @@
-name: "Static Checks"
+name: "Unit Testing"
 
 on: [pull_request]
 
@@ -10,7 +10,7 @@ jobs:
       fail-fast: false
       matrix:
         node_version:
-          - 15
+          - 16
     
     steps:
       - name: Checkout Source
@@ -33,3 +33,7 @@ jobs:
         run: |
           npm install
           npm run lint
+      
+      - name: Run unit testing
+        run: |
+          npm run test:unit:ci

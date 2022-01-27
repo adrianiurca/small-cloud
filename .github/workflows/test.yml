@@ -17,6 +17,7 @@ jobs:
 
     env:
       PLATFORM: ${{ matrix.platform }}
+      VM_PROVIDER: virtualbox
     
     steps:
       - name: Checkout Source
@@ -66,9 +67,15 @@ jobs:
           key: ${{ runner.os }}-puppetlabs-
 
       - name: Install Puppet Agent
-        # if: steps.cache-puppet.outputs.cache-hit != 'true'
         run: brew install cask puppetlabs/puppet/puppet-agent
       
+      # - name: Start SSH session
+      #   if: matrix.platform == 'generic/centos7'
+      #   uses: luchihoratiu/debug-via-ssh@main
+      #   with:
+      #     NGROK_AUTH_TOKEN: ${{ secrets.NGROK_AUTH_TOKEN }}
+      #     SSH_PASS: ${{ secrets.SSH_PASS }}
+
       - name: Run test
         run: |
           sudo chmod 0666 /etc/hosts

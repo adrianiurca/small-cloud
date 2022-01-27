@@ -1,4 +1,4 @@
-import http from 'https://cdn.skypack.dev/@easytool/http';
+import http from 'https://cdn.skypack.dev/@easytool/http'
 
 const loading = (size) => {
   const section = document.getElementsByClassName('section')[0]
@@ -23,10 +23,22 @@ const fetchVmDetails = async(vmId) => {
       baseURL: 'http://localhost:8080/',
       url: `/vm/details/${vmId}`
     })
-    return response
+    return response.data
   } catch(error) {
     return { data: error }
   }
+}
+
+const toggleShowPasswordListener = (elem, value) => {
+  const td = elem.parentElement
+  const password = value
+  if(elem.innerText === 'visibility_off') {
+    td.innerHTML = `<i class="material-icons" id="password-show-toggle">visibility</i> ${password}`
+  } else {
+    td.innerHTML = `<i class="material-icons" id="password-show-toggle">visibility_off</i> ${password.replace(/./gi, '*')}`
+  }
+  const updatedElem = document.getElementById('password-show-toggle')
+  updatedElem.addEventListener('click', () => toggleShowPasswordListener(updatedElem, value))
 }
 
 const detailsApp = async(vmId) => {
@@ -35,7 +47,7 @@ const detailsApp = async(vmId) => {
   const listAllFacts = document.getElementsByClassName('section')[0]
   listAllFacts.innerHTML = ''
 
-  if(response.data.hasOwnProperty('vm_details')) {
+  if(response.hasOwnProperty('vm_details')) {
     const table = document.createElement('table')
     table.className = 'responsive-table'
 
@@ -50,8 +62,8 @@ const detailsApp = async(vmId) => {
     table.appendChild(thead)
 
     const tbody = document.createElement('tbody')
-    for(let fact of Object.keys(response.data.vm_details)) {
-      const factObject = response.data.vm_details[fact]
+    for(let fact of Object.keys(response)) {
+      const factObject = response[fact]
       switch(fact) {
         case 'os':
         case 'processors':
@@ -62,7 +74,7 @@ const detailsApp = async(vmId) => {
             tdFactName.innerText = key
             tr.appendChild(tdFactName)
             const tdFactValue = document.createElement('td')
-            tdFactValue.innerText = typeof(factObject[key]) === 'string' ? factObject[key] : factObject[key]// .join(', ')
+            tdFactValue.innerText = typeof(factObject[key]) === 'string' ? factObject[key] : factObject[key]
             tr.appendChild(tdFactValue)
             tbody.appendChild(tr)
           }
@@ -79,6 +91,16 @@ const detailsApp = async(vmId) => {
             tbody.appendChild(tr)
           }
           break
+        case 'password':
+          const passwordTr = document.createElement('tr')
+          const passwordTdFactName = document.createElement('td')
+          passwordTdFactName.innerText = fact
+          passwordTr.appendChild(passwordTdFactName)
+          const passwordTdFactValue = document.createElement('td')
+          passwordTdFactValue.innerHTML = `<i class="material-icons" id="password-show-toggle">visibility_off</i> ${factObject.replace(/./gi, '*')}`
+          passwordTr.appendChild(passwordTdFactValue)
+          tbody.appendChild(passwordTr)
+          break
         default:
           const tr = document.createElement('tr')
           const tdFactName = document.createElement('td')
@@ -92,6 +114,9 @@ const detailsApp = async(vmId) => {
     }
     table.appendChild(tbody)
     listAllFacts.appendChild(table)
+
+    const toggleShowPassword = document.getElementById('password-show-toggle')
+    toggleShowPassword.addEventListener('click', () => toggleShowPasswordListener(toggleShowPassword, response.password))
   } else {
     console.log(response.data)
     const h5 = document.createElement('h5')

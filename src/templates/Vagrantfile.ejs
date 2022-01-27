@@ -1,22 +1,22 @@
 ENV["LC_ALL"] = "en_US.UTF-8"
 
 $install_puppet = <<-SCRIPT
-<% vm_puppet_install_script.forEach(command => { %>
+<% puppetInstallScript.forEach(command => { %>
   <%= command %>
 <% }) %>
-echo <%= typeof(vm_osfamily) %>
-echo <%= vm_osfamily %>
-<% if(vm_osfamily === 'debian') { %>
+echo <%= typeof(osfamily) %>
+echo <%= osfamily %>
+<% if(osfamily === 'debian') { %>
   sudo sed -i 's/# auth required pam_wheel.so/auth required pam_wheel.so/g' /etc/pam.d/su
 <% } %>
 SCRIPT
 
 $install_jq = <<-SCRIPT
-<% if(vm_osfamily === 'redhat') { %>
+<% if(osfamily === 'redhat') { %>
   puppet module install puppet-epel
   puppet apply -e 'include epel'
   sudo yum install jq -y
-<% } else if(vm_osfamily === 'debian') { %>
+<% } else if(osfamily === 'debian') { %>
   sudo apt-get install jq -y
 <% } else { %>
   echo 'Unsupported platform'
@@ -83,18 +83,18 @@ echo "###facter_processors_physicalcount ${processors_physicalcount} facter_proc
 SCRIPT
 
 $config_user = <<-SCRIPT
-sudo adduser <%= vm_user %> <% if(vm_osfamily === 'debian') { %><%= '--force-badname' %><% } %>
-sudo echo -e "<%= vm_password %>\n<%= vm_password %>" | passwd <%= vm_user %>
-sudo usermod -aG wheel <%= vm_user %>
+sudo adduser <%= sshUser %> <% if(osfamily === 'debian') { %><%= '--force-badname' %><% } %>
+sudo echo -e "<%= password %>\n<%= password %>" | passwd <%= sshUser %>
+sudo usermod -aG wheel <%= sshUser %>
 sudo sed -i 's/PasswordAuthentication no/PasswordAuthentication yes/g' /etc/ssh/sshd_config
-sudo echo 'AllowUsers <%= vm_user %>' >> /etc/ssh/sshd_config
+sudo echo 'AllowUsers <%= sshUser %>' >> /etc/ssh/sshd_config
 sudo systemctl restart sshd
 SCRIPT
 
 Vagrant.configure("2") do |config|
-  config.vm.box = "<%= vm_box %>"
-  config.vm.hostname = "<%= vm_hostname %>"
-  config.vm.network "public_network", bridge: "en0: Wi-Fi (Wireless)"
+  config.vm.box = "<%= box %>"
+  config.vm.hostname = "<%= hostname %>"
+  config.vm.network "public_network", use_dhcp_assigned_default_route: true # bridge: "en0: Wi-Fi (Wireless)"
   config.vm.provision "shell", inline: $install_puppet
   config.vm.provision "shell", inline: $install_jq
   config.vm.provision "shell", inline: $fetch_facts

@@ -1,14 +1,40 @@
-import { VagrantMachine } from "./vagrant";
-import path from 'path'
+import { GCPMachine } from './terraform'
+import path, { dirname } from 'path'
 import fs from 'fs'
+import { fileURLToPath } from 'url'
+const filename = fileURLToPath(import.meta.url)
+const localDirname = dirname(filename)
 
 export interface DataBase {
-  users: string[]
-  vms: VagrantMachine[]
+  users: User[]
+  vms: GCPMachine[]
 }
 
-export const saveVM = (vmData: VagrantMachine) => {
-  const dbPath = path.join(__dirname, '/../db', 'db.json')
+export interface User {
+  id: string
+  username: string
+  password: string
+  email: string
+}
+
+export const saveUser = (user: User) => {
+  const dbPath = path.join(localDirname, '/../db', 'db.json')
+  try {
+    const db = JSON.parse(fs.readFileSync(dbPath, { encoding: 'utf8' }).toString())
+    const updatedDb = [...db.users, user]
+    db.users = updatedDb
+    try {
+      fs.writeFileSync(dbPath, JSON.stringify(db))
+    } catch(err) {
+      throw err
+    }
+  } catch(err) {
+    throw err
+  }
+}
+
+export const saveVM = (vmData: GCPMachine) => {
+  const dbPath = path.join(localDirname, '/../db', 'db.json')
   try {
     const db = JSON.parse(fs.readFileSync(dbPath, { encoding: 'utf8' }).toString())
     const updatedDb = [...db.vms, vmData]
@@ -23,11 +49,34 @@ export const saveVM = (vmData: VagrantMachine) => {
   }
 }
 
-export const removeVM = (vmData: VagrantMachine) => {
-  const dbPath = path.join(__dirname, '/../db', 'db.json')
+export const updateUser = (newInfo: Partial<User>) => {
+  const dbPath = path.join(localDirname, '/../db', 'db.json')
   try {
     const db = JSON.parse(fs.readFileSync(dbPath, { encoding: 'utf8' }).toString())
-    const updatedDb = db.vms.filter((machine: VagrantMachine) => machine.vm_id !== vmData.vm_id)
+    const updatedDb = db.users.map((user: User) => {
+      if(user.id === newInfo.id) {
+        return {
+          ...user,
+          ...newInfo
+        }
+      }
+    })
+    db.users = updatedDb
+    try {
+      fs.writeFileSync(dbPath, JSON.stringify(db))
+    } catch(err) {
+      throw err
+    }
+  } catch(err) {
+    throw err
+  }
+}
+
+export const removeVM = (vmData: GCPMachine) => {
+  const dbPath = path.join(localDirname, '/../db', 'db.json')
+  try {
+    const db = JSON.parse(fs.readFileSync(dbPath, { encoding: 'utf8' }).toString())
+    const updatedDb = db.vms.filter((machine: GCPMachine) => (machine.id !== vmData.id))
     db.vms = updatedDb
     try {
       fs.writeFileSync(dbPath, JSON.stringify(db))
@@ -39,8 +88,8 @@ export const removeVM = (vmData: VagrantMachine) => {
   }
 }
 
-export const allVms = ():VagrantMachine[] => {
-  const dbPath: string = path.join(__dirname, '/../db', 'db.json')
+export const allVms = (): GCPMachine[] => {
+  const dbPath: string = path.join(localDirname, '/../db', 'db.json')
   try {
     const db: DataBase = JSON.parse(fs.readFileSync(dbPath, { encoding: 'utf8' }).toString())
     return db.vms
@@ -49,22 +98,65 @@ export const allVms = ():VagrantMachine[] => {
   }
 }
 
-export const getVmById = (id: number):VagrantMachine => {
-  const dbPath: string = path.join(__dirname, '/../db', 'db.json')
+export const allUsers = (): User[] => {
+  const dbPath: string = path.join(localDirname, '/../db', 'db.json')
   try {
     const db: DataBase = JSON.parse(fs.readFileSync(dbPath, { encoding: 'utf8' }).toString())
-    return db.vms.find(machine => machine.vm_id === id)
+    return db.users
   } catch(err) {
     throw err
   }
 }
 
-export const lastIndex = (): number => {
-  const vms = allVms()
-  if(vms.length > 0) {
-    const arr = vms.map(vm => vm.vm_id)
-    return arr[arr.length - 1]
-  } else {
-    return 0
+export const getVmById = (id: string): GCPMachine | undefined => {
+  const dbPath: string = path.join(localDirname, '/../db', 'db.json')
+  try {
+    const db: DataBase = JSON.parse(fs.readFileSync(dbPath, { encoding: 'utf8' }).toString())
+    return db.vms.find(machine => machine.id === id)
+  } catch(err) {
+    throw err
+  }
+}
+
+export const getUserByUsername = (username: string): User | undefined => {
+  const dbPath: string = path.join(localDirname, '/../db', 'db.json')
+  try {
+    const db: DataBase = JSON.parse(fs.readFileSync(dbPath, { encoding: 'utf8' }).toString())
+    return db.users.find(user => user.username === username)
+  } catch(err) {
+    throw err
+  }
+}
+
+export const getUserById = (id: string): User | undefined => {
+  const dbPath: string = path.join(localDirname, '/../db', 'db.json')
+  try {
+    const db: DataBase = JSON.parse(fs.readFileSync(dbPath, { encoding: 'utf8' }).toString())
+    return db.users.find(user => user.id === id)
+  } catch(err) {
+    throw err
+  }
+}
+
+export const extendLifetime = (id: string, value: string): void => {
+  const dbPath = path.join(localDirname, '/../db', 'db.json')
+  try {
+    const db = JSON.parse(fs.readFileSync(dbPath, { encoding: 'utf8' }).toString())
+    const updatedDb = db.vms.map((machine: GCPMachine) => {
+      if(machine.id === id) {
+        return {
+          ...machine,
+          lifetime: value
+        }
+      }
+    })
+    db.vms = updatedDb
+    try {
+      fs.writeFileSync(dbPath, JSON.stringify(db))
+    } catch(err) {
+      throw err
+    }
+  } catch(err) {
+    throw err
   }
 }

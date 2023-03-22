@@ -1,4 +1,22 @@
 {
-    "users": ["user1","user2"],
-    "vms": []
+    "users": [
+        {
+            "id":"9eb39d5c-0a4c-4941-ae48-aa171b848800",
+            "username":"adrianiurca",
+            "password":"$2b$12$uMWPnkegZLtEwlmBe5Ctjec07KHsz/b0eItjXyDbr0yLm8Ia6nGWy",
+            "email":"adrian.iurca@gmail.com"
+        }
+    ],
+    "vms": [
+        {
+            "id":"a2d34761-a477-4268-a36a-e5239d8b3279",
+            "ipv4Address":"35.205.112.205",
+            "sshUser":"vMzV2SyMkHvxlxeRN8ZnBGPmoTwaIeqP",
+            "ed25519Keypath":"/Users/adrian.iurca/Desktop/projects/small-cloud/dist/helpers/machine-a2d34761-a477-4268-a36a-e5239d8b3279/ssh-keys/id_ed25519",
+            "hostname":"review-sharp",
+            "lifetime":"3h",
+            "createdAt":"2023-03-14T23:01:19.557Z",
+            "machinePath":"/Users/adrian.iurca/Desktop/projects/small-cloud/dist/helpers/machine-a2d34761-a477-4268-a36a-e5239d8b3279"
+        }
+    ]
 }

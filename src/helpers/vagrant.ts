@@ -219,7 +219,7 @@ export const provision = async (
 
     const platformListProviderSpecific: Platform[] = platformList.virtualbox
     const vmPlatform: Platform = platformListProviderSpecific.filter(
-      (x) => x.box === machine.box
+      platform => platform.box === machine.box
     )[0]
     const puppetInstallScript: string[] = generatePuppetInstallScript(
       vmPlatform,

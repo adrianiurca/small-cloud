@@ -4,11 +4,10 @@ import fs from 'fs'
 import { fileURLToPath } from 'url'
 import randomString from 'randomstring'
 import * as uuid from 'uuid'
-import LOG from './log_utils.js'
-import { randomBytes } from '@noble/hashes/utils'
 import randomWords from 'random-words'
+import LOG from './log_utils.js'
 import shell from './shell.js'
-const sshImport = import('ed25519-keygen/ssh')
+import generateSSHKeypairModule from './generate_ssh_keypair.js'
 const filename = fileURLToPath(import.meta.url)
 const localDirname = dirname(filename)
 
@@ -37,17 +36,6 @@ export interface GCPError {
   error: Error
 }
 
-const generateKeypair = async (sshUser: string) => {
-  try {
-    const seed = randomBytes(32)
-    const ssh = (await sshImport).default
-    const { publicKey, privateKey } = await ssh(seed, sshUser)
-    return { publicKey, privateKey }
-  } catch (error) {
-    throw error
-  }
-}
-
 export const terraformApply = async (machineParams: GCPMachineParams) => {
   try {
     LOG('/src/helpers/terraformApply: entry point')
@@ -66,7 +54,7 @@ export const terraformApply = async (machineParams: GCPMachineParams) => {
         : machineParams.lifetime
     const createdAt: string = new Date().toISOString()
     const ownerId: string = machineParams.ownerId
-    const { publicKey, privateKey } = await generateKeypair(sshUser)
+    const { publicKey, privateKey } = await generateSSHKeypairModule.generateSSHKeypair(sshUser)
     const credentials = process.env.KEY_LOCATION
     const terraformTemplatePath: string = path.join(
       localDirname,

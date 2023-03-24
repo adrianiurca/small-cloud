@@ -103,13 +103,5 @@ dist
 # TernJS port file
 .tern-port
 
-# npm dependencies
-package-lock.json
-
-# tools
-tools/run_test.ts
-tools/package-lock.json
-tools/node_modules
-
 # cloud keys
 cloud-keys/google-key.json

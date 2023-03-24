@@ -1,15 +1,15 @@
 export interface Platform {
-  box: string,
-  name: string,
-  label: string,
-  googlefamily?: string,
-  family: string,
+  box: string
+  name: string
+  label: string
+  googlefamily?: string
+  family: string
   majorversion: string
   url: string
 }
 
 export const platformList: {
-  google: Platform[],
+  google: Platform[]
   virtualbox: Platform[]
 } = {
   google: [

@@ -5,6 +5,7 @@ import { Strategy as JWTstrategy, ExtractJwt as ExtractJWT } from 'passport-jwt'
 import { Strategy as LocalStrategy } from 'passport-local'
 import { v4 as uuidv4 } from 'uuid'
 import { User, saveUser, getUserByUsername } from '../helpers/db_utils.js'
+import LOG from '../helpers/log_utils.js'
 
 const BCRYPT_SALT_ROUNDS = 12
 
@@ -19,7 +20,7 @@ passport.use(
     try {
       const user: User | undefined = getUserByUsername(username)
       if(user) {
-        console.log('username already taken!')
+        LOG('username already taken!')
         return done(null, false, { message: 'username already taken' })
       } else {
         bcrypt.hash(password, BCRYPT_SALT_ROUNDS).then(hashedPassword => {
@@ -57,14 +58,14 @@ passport.use(
       if(user) {
         bcrypt.compare(password, user.password).then(response => {
           if(response) {
-            console.log('user found & authenticated')
+            LOG('user found & authenticated')
             return done(null, user)
           }
-          console.log('passwords do not match')
+          LOG('passwords do not match')
           return done(null, false, { message: 'passwords do not match' })
         })
       } else {
-        console.log('bad username')
+        LOG('bad username')
         return done(null, false, { message: 'bad username' })
       }
     } catch(err) {
@@ -84,10 +85,10 @@ passport.use(
     try {
       const user: User | undefined = getUserByUsername(jwtPayload.id)
       if(user) {
-        console.log('user found in db')
+        LOG('user found in db')
         return done(null, user)
       } else {
-        console.log('user not found in db')
+        LOG('user not found in db')
         return done(null, false, { message: 'user not found in db' })
       }
     } catch(err) {

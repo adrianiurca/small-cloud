@@ -2,9 +2,9 @@ import { Platform } from '../config/platforms'
 
 const fetchCodename = (platform: Platform, collection: string) => {
   let codename = 'unsupported'
-  switch(platform.majorversion) {
+  switch (platform.majorversion) {
     case '8':
-      if(collection === 'puppet6') {
+      if (collection === 'puppet6') {
         codename = 'jessie'
       }
       break
@@ -16,7 +16,7 @@ const fetchCodename = (platform: Platform, collection: string) => {
       break
     case '14.04':
     case '1404':
-      if(collection === 'puppet6') {
+      if (collection === 'puppet6') {
         codename = 'trusty'
       }
       break
@@ -41,10 +41,10 @@ const fetchCodename = (platform: Platform, collection: string) => {
 export const generatePuppetInstallScript = (platform: Platform, puppetCollection: string): string[] => {
   const collection = puppetCollection
 
-  if(platform.family === 'debian') {
+  if (platform.family === 'debian') {
     const codename = fetchCodename(platform, collection)
-    if(codename === 'unsupported') {
-      throw new Error((`No builds for ${platform.label}`))
+    if (codename === 'unsupported') {
+      throw new Error(`No builds for ${platform.label}`)
     } else {
       return [
         `curl -o puppet.deb http://apt.puppetlabs.com/${collection}-release-${codename}.deb`,
@@ -55,11 +55,13 @@ export const generatePuppetInstallScript = (platform: Platform, puppetCollection
     }
   }
 
-  if(platform.family === 'redhat') {
+  if (platform.family === 'redhat') {
     return [
       `curl -o puppet.rpm http://yum.puppetlabs.com/${collection}/${collection}-release-el-${platform.majorversion}.noarch.rpm`,
       'rpm -Uvh puppet.rpm --quiet',
       'yum install puppetserver -y --quiet'
     ]
   }
+
+  return []
 }

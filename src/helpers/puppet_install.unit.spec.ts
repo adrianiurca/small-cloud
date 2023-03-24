@@ -2,7 +2,7 @@ import { generatePuppetInstallScript } from './puppet_install.js'
 import { Platform } from '../config/platforms'
 import { expect } from 'chai'
 
-describe('generatePuppetInstallScript test', () => {
+describe('generatePuppetInstallScript unit tests', () => {
   it('Centos 7 is supported', () => {
     const platform: Platform = {
       box: 'generic/centos7',

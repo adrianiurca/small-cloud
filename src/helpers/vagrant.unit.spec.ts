@@ -13,7 +13,7 @@ const details: VagrantDetails = {
   owner: 'me'
 }
 
-describe('vagrant provision unit testing', () => {
+describe('vagrant provision unit tests', () => {
   it('should throw an error when shell.mkdir fails to create machine directory', async () => {
     const mkdirMock = sinon.mock(shell).expects('mkdir').once()
     mkdirMock.onFirstCall().throws()

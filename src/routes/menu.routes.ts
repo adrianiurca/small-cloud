@@ -1,5 +1,7 @@
 import { Router } from 'express'
 import passport from 'passport'
+import LOG from '../helpers/log_utils'
+
 const menuRouter = Router()
 
 menuRouter.get('/', (req, res, next) => passport.authenticate(
@@ -35,10 +37,10 @@ menuRouter.get('/', (req, res, next) => passport.authenticate(
       ]
     }
     if(err) {
-      console.log(err)
+      LOG(err)
     }
     if(info) {
-      console.log(info.message)
+      LOG(info.message)
       res.status(200).json({
         auth: false,
         menu: menu.notAuthenticated

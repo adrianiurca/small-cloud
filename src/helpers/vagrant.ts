@@ -47,21 +47,21 @@ export interface MemoryDetails {
 
 export interface VagrantFacts {
   os: {
-    architecture: string;
-    family: string;
-    hardware: string;
-    name: string;
-    release: string;
+    architecture: string
+    family: string
+    hardware: string
+    name: string
+    release: string
   }
   processors: {
-    count: number;
-    isa: string;
-    models: string[];
-    physicalcount: number;
+    count: number
+    isa: string
+    models: string[]
+    physicalcount: number
   }
   memory: {
-    swap: string;
-    system: string;
+    swap: string
+    system: string
   }
   kernel: string
   kernelrelease: string
@@ -70,81 +70,43 @@ export interface VagrantFacts {
   virtual: string
   disks: {
     sda: {
-      model: string;
-      size: string;
-    };
+      model: string
+      size: string
+    }
   }
   filesystems: string
 }
 
 const fetchVmFacts = (output: string): VagrantFacts => {
-  const osArchitecture: string = output.match(
-    /###facter_os_architecture\s(.*)\sfacter_os_architecture###/
-  )[1]
-  const osFamily: string = output.match(
-    /###facter_os_family\s(.*)\sfacter_os_family###/
-  )[1]
-  const osHardware: string = output.match(
-    /###facter_os_hardware\s(.*)\sfacter_os_hardware###/
-  )[1]
-  const osName: string = output.match(
-    /###facter_os_name\s(.*)\sfacter_os_name###/
-  )[1]
-  const osRelease: string = output.match(
-    /###facter_os_release\s(.*)\sfacter_os_release###/
-  )[1]
-  const memorySwap: string = output.match(
-    /###facter_memory_swap\s(.*)\sfacter_memory_swap###/
-  )[1]
-  const memorySystem: string = output.match(
-    /###facter_memory_system\s(.*)\sfacter_memory_system###/
-  )[1]
+  const osArchitecture: string = output.match(/###facter_os_architecture\s(.*)\sfacter_os_architecture###/)![1]
+  const osFamily: string = output.match(/###facter_os_family\s(.*)\sfacter_os_family###/)![1]
+  const osHardware: string = output.match(/###facter_os_hardware\s(.*)\sfacter_os_hardware###/)![1]
+  const osName: string = output.match(/###facter_os_name\s(.*)\sfacter_os_name###/)![1]
+  const osRelease: string = output.match(/###facter_os_release\s(.*)\sfacter_os_release###/)![1]
+  const memorySwap: string = output.match(/###facter_memory_swap\s(.*)\sfacter_memory_swap###/)![1]
+  const memorySystem: string = output.match(/###facter_memory_system\s(.*)\sfacter_memory_system###/)![1]
   const processorsCount: number = parseInt(
-    output.match(
-      /###facter_processors_count\s(.*)\sfacter_processors_count###/
-    )[1],
+    output.match(/###facter_processors_count\s(.*)\sfacter_processors_count###/)![1],
     10
   )
-  const processorsModels = []
+  const processorsModels: string[] = []
   for (let index = 0; index < processorsCount; index++) {
-    const regex: RegExp = new RegExp(
-      `###facter_processors_models_${index}#(.*)#facter_processors_models_${index}###`
-    )
-    processorsModels.push(output.match(regex)[1])
+    const regex: RegExp = new RegExp(`###facter_processors_models_${index}#(.*)#facter_processors_models_${index}###`)
+    processorsModels.push((output.match(regex))![1])
   }
-  const processorsIsa: string = output.match(
-    /###facter_processors_isa\s(.*)\sfacter_processors_isa###/
-  )[1]
+  const processorsIsa: string = output.match(/###facter_processors_isa\s(.*)\sfacter_processors_isa###/)![1]
   const processorsPhysicalcount: number = parseInt(
-    output.match(
-      /###facter_processors_physicalcount\s(.*)\sfacter_processors_physicalcount###/
-    )[1],
+    output.match(/###facter_processors_physicalcount\s(.*)\sfacter_processors_physicalcount###/)![1],
     10
   )
-  const kernel: string = output.match(
-    /###facter_kernel\s(.*)\sfacter_kernel###/
-  )[1]
-  const kernelRelease: string = output.match(
-    /###facter_kernelrelease\s(.*)\sfacter_kernelrelease###/
-  )[1]
-  const timezone: string = output.match(
-    /###facter_timezone\s(.*)\sfacter_timezone###/
-  )[1]
-  const virtual: string = output.match(
-    /###facter_virtual\s(.*)\sfacter_virtual###/
-  )[1]
-  const isVirtual: boolean =
-    output.match(/###facter_is_virtual\s(.*)\sfacter_is_virtual###/)[1] ===
-    'true'
-  const disksModel: string = output.match(
-    /###facter_disks_sda_model\s(.*)\sfacter_disks_sda_model###/
-  )[1]
-  const disksSize: string = output.match(
-    /###facter_disks_sda_size\s(.*)\sfacter_disks_sda_size###/
-  )[1]
-  const fileSystems: string = output.match(
-    /###facter_filesystems\s(.*)\sfacter_filesystems###/
-  )[1]
+  const kernel: string = output.match(/###facter_kernel\s(.*)\sfacter_kernel###/)![1]
+  const kernelRelease: string = output.match(/###facter_kernelrelease\s(.*)\sfacter_kernelrelease###/)![1]
+  const timezone: string = output.match(/###facter_timezone\s(.*)\sfacter_timezone###/)![1]
+  const virtual: string = output.match(/###facter_virtual\s(.*)\sfacter_virtual###/)![1]
+  const isVirtual: boolean = output.match(/###facter_is_virtual\s(.*)\sfacter_is_virtual###/)![1] === 'true'
+  const disksModel: string = output.match(/###facter_disks_sda_model\s(.*)\sfacter_disks_sda_model###/)![1]
+  const disksSize: string = output.match(/###facter_disks_sda_size\s(.*)\sfacter_disks_sda_size###/)![1]
+  const fileSystems: string = output.match(/###facter_filesystems\s(.*)\sfacter_filesystems###/)![1]
 
   const facts: VagrantFacts = {
     os: {
@@ -152,17 +114,17 @@ const fetchVmFacts = (output: string): VagrantFacts => {
       family: osFamily,
       hardware: osHardware,
       name: osName,
-      release: osRelease,
+      release: osRelease
     },
     processors: {
       count: processorsCount,
       isa: processorsIsa,
       models: processorsModels,
-      physicalcount: processorsPhysicalcount,
+      physicalcount: processorsPhysicalcount
     },
     memory: {
       swap: memorySwap,
-      system: memorySystem,
+      system: memorySystem
     },
     kernel,
     kernelrelease: kernelRelease,
@@ -172,29 +134,21 @@ const fetchVmFacts = (output: string): VagrantFacts => {
     disks: {
       sda: {
         model: disksModel,
-        size: disksSize,
-      },
+        size: disksSize
+      }
     },
-    filesystems: fileSystems,
+    filesystems: fileSystems
   }
   return facts
 }
 
-export const provision = async (
-  machine: VagrantDetails
-): Promise<VagrantMachine> => {
+export const provision = async (machine: VagrantDetails): Promise<VagrantMachine> => {
   try {
     // build path for vagranfile ejs template
-    const vagrantfileTemplatePath: string = path.join(
-      localDirname,
-      '/../templates',
-      'Vagrantfile.ejs'
-    )
+    const vagrantfileTemplatePath: string = path.join(localDirname, '/../templates', 'Vagrantfile.ejs')
 
     // load template
-    const vagrantfileTemplate: string = ejs
-      .fileLoader(vagrantfileTemplatePath)
-      .toString()
+    const vagrantfileTemplate: string = ejs.fileLoader(vagrantfileTemplatePath).toString()
 
     // generate hostname
     let hostname: string = `${randomWords({ exactly: 2, join: '-' })}.vm`
@@ -206,37 +160,25 @@ export const provision = async (
       hostname = `${randomWords({ exactly: 2, join: '-' })}.vm`
     }
 
-    machine.sshUser =
-      typeof machine.sshUser === 'undefined'
-        ? randomString.generate()
-        : machine.sshUser
-    machine.password =
-      typeof machine.password === 'undefined'
-        ? randomString.generate()
-        : machine.password
-    machine.lifetime =
-      typeof machine.lifetime === 'undefined' ? '3h' : machine.lifetime
+    machine.sshUser = typeof machine.sshUser === 'undefined' ? randomString.generate() : machine.sshUser
+    machine.password = typeof machine.password === 'undefined' ? randomString.generate() : machine.password
+    machine.lifetime = typeof machine.lifetime === 'undefined' ? '3h' : machine.lifetime
 
     const platformListProviderSpecific: Platform[] = platformList.virtualbox
-    const vmPlatform: Platform = platformListProviderSpecific.filter(
-      platform => platform.box === machine.box
-    )[0]
-    const puppetInstallScript: string[] = generatePuppetInstallScript(
-      vmPlatform,
-      'puppet6'
-    )
+    const vmPlatform: Platform = platformListProviderSpecific.filter((platform) => platform.box === machine.box)[0]
+    const puppetInstallScript: string[] = generatePuppetInstallScript(vmPlatform, 'puppet6')
     const vagrantfileParams = {
       ...machine,
       hostname,
       puppetInstallScript,
-      osfamily: vmPlatform.family,
+      osfamily: vmPlatform.family
     }
 
     const vagrantfileParamsProviderSpecific = vagrantfileParams
 
     // fill template with values
     const vagrantfile: string = ejs.render(vagrantfileTemplate, {
-      ...vagrantfileParamsProviderSpecific,
+      ...vagrantfileParamsProviderSpecific
     })
 
     // generate path for Vagrantfile(the VM's name)
@@ -246,45 +188,29 @@ export const provision = async (
     const x = await shell.mkdir(machinePath)
 
     // build path for Vagrantfile
-    const machineVagrantfilePath: string = path.join(
-      `${machinePath}/`,
-      'Vagrantfile'
-    )
+    const machineVagrantfilePath: string = path.join(`${machinePath}/`, 'Vagrantfile')
 
     // buffer data
-    const vagrantfileData: Buffer = Buffer.alloc(
-      vagrantfile.length,
-      vagrantfile,
-      'utf8'
-    )
+    const vagrantfileData: Buffer = Buffer.alloc(vagrantfile.length, vagrantfile, 'utf8')
 
     // build Vagrantfile
     fs.writeFileSync(machineVagrantfilePath, vagrantfileData)
 
     // build VM
-    const { stdout: vagrantUpStdout } = await shell.exec(
-      `cd ${machinePath} && vagrant up`
-    )
+    const { stdout: vagrantUpStdout }: { stdout: NonNullable<string> } = await shell.exec(`cd ${machinePath} && vagrant up`)
     LOG(`VAGRANTFILE: ${vagrantfile}`)
     LOG(`STDOUT: ${vagrantUpStdout}`)
     const vmIPs: string[] = []
-    const vmIPsLength: number = parseInt(
-      vagrantUpStdout.match(/###facter_ip_count\s(.*)\sfacter_ip_count###/)[1],
-      10
-    )
+    const vmIPsLength: number = parseInt(vagrantUpStdout.match(/###facter_ip_count\s(.*)\sfacter_ip_count###/)![1], 10)
     for (let index = 0; index < vmIPsLength; index++) {
-      const regex: RegExp = new RegExp(
-        `###facter_ip_${index}#(.*)#facter_ip_${index}###`
-      )
-      vmIPs.push(vagrantUpStdout.match(regex)[1])
+      const regex: RegExp = new RegExp(`###facter_ip_${index}#(.*)#facter_ip_${index}###`)
+      vmIPs.push(vagrantUpStdout.match(regex)![1])
     }
     const hostIPs: string[] = await fetchIPV4()
     let vmIp: string = vmIPs
       .filter(
         (vmIP) =>
-          hostIPs
-            .map((ip) => `${ip.split('.')[0]}.${ip.split('.')[1]}`)
-            .filter((ip) => vmIP.startsWith(ip)).length > 0
+          hostIPs.map((ip) => `${ip.split('.')[0]}.${ip.split('.')[1]}`).filter((ip) => vmIP.startsWith(ip)).length > 0
       )
       .filter((ip) => ip.split('.')[0] !== '127')[0]
     if (typeof vmIp === 'undefined') {
@@ -309,7 +235,7 @@ export const provision = async (
       hostname,
       path: machinePath,
       // vm_details: vmDetails,
-      createdAt: new Date().toISOString(),
+      createdAt: new Date().toISOString()
     }
   } catch (error) {
     LOG(error)
@@ -320,9 +246,7 @@ export const provision = async (
 export const teardown = async (machine: VagrantMachine): Promise<string> => {
   try {
     // run vagrant destroy
-    const { stdout: vagrantDestroyStdout } = await shell.exec(
-      `cd ${machine.path} && vagrant destroy -f`
-    )
+    const { stdout: vagrantDestroyStdout } = await shell.exec(`cd ${machine.path} && vagrant destroy -f`)
     LOG(vagrantDestroyStdout)
     await shell.rm([machine.path], '-rf')
     const { stdout: puppetApplyStdout } = await shell.exec(

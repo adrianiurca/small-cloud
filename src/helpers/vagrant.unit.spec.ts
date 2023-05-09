@@ -14,6 +14,8 @@ const details: VagrantDetails = {
 }
 
 describe('vagrant provision unit tests', () => {
+  beforeEach(() => sinon.restore())
+  afterEach(() => sinon.restore())
   it('should throw an error when shell.mkdir fails to create machine directory', async () => {
     const mkdirMock = sinon.mock(shell).expects('mkdir').once()
     mkdirMock.onFirstCall().throws()

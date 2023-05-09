@@ -1,6 +1,6 @@
 import { Router } from 'express'
 import passport from 'passport'
-import LOG from '../helpers/log_utils'
+import LOG from '../helpers/log_utils.js'
 
 const menuRouter = Router()
 

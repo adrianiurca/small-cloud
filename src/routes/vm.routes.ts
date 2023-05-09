@@ -20,21 +20,20 @@ vmRouter.get('/all', (_req, res) => {
   return res.status(200).json({ vm_list: allVms() })
 })
 
-vmRouter.post('/new', (req, res) => {
-  LOG('POST /vm/new entry point')
-  terraformApply(req.body)
-    .then((newVM: GCPMachine) => {
-      saveVM(newVM)
-      return res.status(200).json(newVM)
-    })
-    .catch((error) => {
-      return res.status(500).json(error)
-    })
+vmRouter.post('/new', async (req, res) => {
+  try {
+    LOG('POST /vm/new entry point')
+    const newVM: GCPMachine = await terraformApply(req.body)
+    saveVM(newVM)
+    return res.status(200).json(newVM)
+  } catch (error) {
+    return res.status(500).json(error)
+  }
 })
 
 vmRouter.get('/details/:id', (req, res) => {
   const { id } = req.params
-  const vm: GCPMachine = getVmById(id)
+  const vm: GCPMachine | undefined = getVmById(id)
   if (vm) {
     return res.status(200).json({
       ip: vm.ipv4Address,
@@ -55,7 +54,7 @@ vmRouter.get('/details', (_req, res) => {
 
 vmRouter.put('/edit/:id', (req, res) => {
   const { id } = req.params
-  const vm: GCPMachine = getVmById(id)
+  const vm: GCPMachine | undefined = getVmById(id)
   if (vm) {
     try {
       const { lifetime } = req.body
@@ -85,7 +84,7 @@ vmRouter.put('/edit/:id', (req, res) => {
 
 vmRouter.delete('/:id', async (req, res) => {
   const { id } = req.params
-  const vm: GCPMachine = getVmById(id)
+  const vm: GCPMachine | undefined = getVmById(id)
   if (vm) {
     try {
       const response = await terraformDestroy(vm)
